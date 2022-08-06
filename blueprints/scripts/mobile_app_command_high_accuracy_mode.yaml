@@ -1,0 +1,39 @@
+blueprint:
+  name: Mobile app - high accuracy mode
+  description: >-
+    Users can turn the high accuracy mode of the background location 
+    sensor on or off using message: command_high_accuracy_mode with 
+    the title being either turn_off or turn_on. 
+    If title is blank, not set or not one of the above expected 
+    values then the notification will post as normal.
+  domain: script
+
+  input:
+    notify_device:
+      name: Device to notify
+      description: Device needs to run the official Home Assistant app to receive notifications.
+      selector:
+        device:
+          integration: mobile_app
+
+    mode:
+      name: Turn on/off high accuracy mode
+      selector:
+        boolean:
+
+variables:
+  mode: !input mode
+
+mode: restart
+
+sequence:
+  - alias: "Send notification"
+    domain: mobile_app
+    type: notify
+    device_id: !input notify_device
+    title: >
+      {% if mode == true %}"turn_on"{% else %}"turn_off"{% endif %}
+    message: "command_high_accuracy_mode"
+#    data:
+#      command: >
+#        {% if mode == true %}"turn_on"{% else %}"turn_off"{% endif %}

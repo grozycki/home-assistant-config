@@ -1,0 +1,48 @@
+blueprint:
+  name: Mobile app - volume level
+  description: >-
+    On Android you can control the devices volume level by sending message: command_volume_level with an appropriate title that must be a number. If title is larger than the maximum level then the maximum level will be used or if title is less than 0 then we will default to 0, anything else will result in the notification posting to the device. channel is also required as outlined in the table below. Certain devices will need to grant a special permission that will appear upon the first command received if the permission was not already granted. This is the same permission as Do Not Disturb up above. Changing the volume level will have a direct impact on Do Not Disturb and Ringer Modes, behavior will vary from device to device.
+  domain: script
+
+  input:
+    notify_device:
+      name: Device to notify
+      description: Device needs to run the official Home Assistant app to receive notifications.
+      selector:
+        device:
+          integration: mobile_app
+
+    stream:
+      name:  Stream
+      selector:
+        select:
+          options:
+            - alarm_stream
+            - music_stream
+            - notification_stream
+            - ring_stream
+            - call_stream
+            - dtmf_stream
+            - system_stream
+    volume_level:
+      name:  Volume level
+      selector:
+        number:
+          min: 0
+          max: 100
+
+variables:
+  title: !input volume_level
+  channel: !input stream
+
+mode: restart
+
+sequence:
+  - alias: "Send notification"
+    domain: mobile_app
+    type: notify
+    device_id: !input notify_device
+    title: "{{ title }}"
+    message: "command_volume_level"
+    data:
+      channel: "{{ channel }}"
